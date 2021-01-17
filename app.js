@@ -26,9 +26,13 @@ app.set('views', './views')
 // Route --------------------------------------------------------------------------------
 app.use('/', rootRouter)
 
-app.get('/api/:name',function(req, res){
+app.get('/api/poster/:name',function(req, res){
 	let fileName = req.params.name
 	res.sendFile(path.resolve(`./assets/posters/${fileName}`));
+})
+app.get('/api/banner/:name',function(req, res){
+	let fileName = req.params.name
+	res.sendFile(path.resolve(`./assets/banners/${fileName}`));
 })
 app.listen(port,()=>{
 	console.log('Start server port = ', port)

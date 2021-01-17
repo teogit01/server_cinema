@@ -6,6 +6,7 @@ var schema = new Schema({
 	code: String,
 	name: String,
 	capacity:Number,
+	status: Boolean,
 	
 	theater:{
 		type: Schema.Types.ObjectId,
@@ -18,12 +19,7 @@ var schema = new Schema({
 	seats:[{
 		type:Schema.Types.ObjectId,
 		ref:"Seat"
-	}],
-	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
+	}],	
 })
 
 var Room = mongoose.model('Room', schema)

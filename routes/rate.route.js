@@ -5,8 +5,10 @@ const router = express.Router()
 const controllers = require('../controllers/rate.controller')
 
 router.get('/', controllers.index)
+router.get('/film/:_idfilm', controllers.rateFilm)	
+router.post('/remove', controllers.remove)	
 // add new role
-router.post('/', controllers.post)
+router.post('/add', controllers.rate)	
 // detroy 
 router.delete('/:id', controllers.destroy)
 

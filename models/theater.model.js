@@ -6,8 +6,10 @@ var Schema = mongoose.Schema
 var schema = new Schema({
 	code: String,
 	name: String,	
+	email: String,
 	address:String,
 	hotline: String,
+	status: Boolean,
 	
 	films:[{
 		type:Schema.Types.ObjectId,
@@ -23,11 +25,6 @@ var schema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: "Branch"
 	},
-
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
 })
 
 var Theater = mongoose.model('Theater', schema)

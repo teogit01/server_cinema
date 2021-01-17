@@ -2,11 +2,9 @@ var mongoose = require('mongoose')
 
 var Schema = mongoose.Schema
 
-var schema = new Schema({
-	username: String,
-	password: String,
-	
+var schema = new Schema({	
 	code: String,
+	password: String,	
 	name: String,
 	birthday: Date,
 	phone: String,
@@ -15,13 +13,16 @@ var schema = new Schema({
 	address: String,
 	point: Number,
 
-	id_role: String,
+	role: Number,
 	
-	create_at: {
-		type: Date,
-		default: Date.now
-	},
-	update_at: Date
+	tickets:[{
+		type:Schema.Types.ObjectId,
+		ref:"Ticket"
+	}],
+	rates:[{
+		type:Schema.Types.ObjectId,
+		ref:"Rate"
+	}],
 })
 
 var User = mongoose.model('User', schema)

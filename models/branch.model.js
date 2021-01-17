@@ -8,12 +8,8 @@ var schema = new Schema({
 	name: String,
 	email: String,
 	hotline: String,
-	city: String,
-	province: String,
-	district: String,
-	village: String,
-	address: String,
-
+	city: String,	
+	status: Boolean,
 	theaters:[{
 		type: Schema.Types.ObjectId,					 
 		ref: "Theater"

@@ -6,12 +6,15 @@ var schema = new Schema({
 	comment: String,
 	star: Number,
 
-	id_film: String,
-	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
+	film:{
+		type:Schema.Types.ObjectId,
+		ref:"Film"
+	},
+	user:{
+		type:Schema.Types.ObjectId,
+		ref:"User"
+	},
+		
 })
 
 var Rate = mongoose.model('Rate', schema)

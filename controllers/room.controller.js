@@ -9,19 +9,18 @@ const methods = {
 		res.send(rooms) 
 		//console.log(shortid.generate())
 	},
-	get: async (req,res)=>{
-		// const rooms = await Room.find().populate({
-		// 	path: 'theater',
-  //   		model: 'Room'
-		// }).populate({
-		// 	path: 'theater',
-  //   		model: 'Theater',
-  //   		populate:{
-  //   			path: 'branch',
-  //   			model: 'Branch'
-  //   		}
-		// })
+	detail : async (req,res)=>{
+		const {_idroom} = req.params		
+		try{	
+			
+			const room = await Room.findById(_idroom)			
+			res.send(room) 
 
+		} catch(err){
+			res.send(err) 
+		}				
+	},
+	get: async (req,res)=>{		
 		try{
 			const rooms = await Room.find().populate({
 				path:'theater',
@@ -49,39 +48,61 @@ const methods = {
 		}		
 	},
 
-	post: async(req, res)=>{
-
-		const { name, _idtheater, capacity } = req.body
-		const room = await new Room({
-			code: shortid.generate(),
-			name: name,
-			theater:_idtheater,
-			capacity: 96
-		})		
+	addRoom: async (req, res)=>{
+			
 		try{
-			room.save()
-			.then(async (respone)=>{
-
+			const { name, _idtheater, capacity } = req.body
+			const room = await new Room({
+				code: shortid.generate(),
+				name: name,
+				theater:_idtheater,
+				capacity: 96
+			})	
+			room.save().then(async (respone)=>{
 				//push id room into theater
-				let theater = await Theater.findById(_idtheater).populate('branch')
+				let theater = await Theater.findById(_idtheater).populate({
+					path:'films',
+					model:'Film'
+				}).populate({
+					path:'rooms',
+					model:'Room'
+				})
 					theater.rooms.push(respone._id)
-					theater.save()				
+					theater.save()							
 
 				// push seat
-				let p_room = await Room.findById(respone._id)
-				let seats = await Seat.find().limit(96)
-					seats.forEach(async (seat)=>{
-						p_room.seats.push(seat._id)
-						p_room.save()
-						seat.rooms.push(respone._id)
-						seat.save()
-						//console.log(seat)
-					})
-				res.json({
-					result : "success",
-					room: respone,
-					theater: theater	
-				})	
+				const ROW = ['A','B','C','D','E','F','G','H']		
+				const COLUMN = [1,2,3,4,5,6,7,8,9,10,11,12]	
+				// create seat
+				ROW.forEach(async (row, idx_r)=>{
+					COLUMN.forEach(async (column,idx_c)=>{
+						let seat = await new Seat({
+							code: shortid.generate(),
+							name:`${row}${column}`,
+							row: row,
+							column:column,
+							type: 'default',
+							room:respone._id,
+							status:1,							
+						})
+						seat.save().then(async (seat)=>{
+							let p_room = await Room.findById(respone._id)
+							p_room.seats.push(seat._id)
+							p_room.save().then(async ()=>{
+								if (idx_r === 7 && idx_c === 11){						
+									const result = await Theater.findById(_idtheater).populate({
+										path:'films',
+										model:'Film'
+									}).populate({
+										path:'rooms',
+										model:'Room'
+									})
+									res.send({theater: result})
+								}
+							})
+						})						
+					})					
+				})					
 			})
 			.catch((err)=>{
 				res.json({
@@ -97,35 +118,28 @@ const methods = {
 		}
 	},
 	//delete
-	destroy: async(req, res)=>{
-		let id = req.params.id
-		
-		let room = await Room.findById({_id: id})
-		let theater = await Theater.findById(room.theater)
-
+	removeRoom : async (req, res)=>{
 		try{
-			if (theater){
-				let idx = theater.rooms.indexOf(id)	
-				if (idx != -1){
-					// have room of theater => delete theater->room
-					theater.rooms.splice(idx,1)
-					theater.save()
-				}
+			const {_idtheater, _idroom} = req.body						
 			
-			}	
-			room.deleteOne({_id: id})
-			.then(()=>{
-				res.json({
-					result : "Delete Successfully",
-					_id: id
-				})
-			})
-			.catch(()=>{
-				res.json({
-					result : "fail"				
-				})
-			})
+			// uptheater
+			const theater = await Theater.findById(_idtheater)
+				const newRooms = theater.rooms.filter(x=>`${x}` != `${_idroom}`)
+				theater.rooms = newRooms								
+				theater.save()
+					// update seats
+				const seat = await Seat.deleteMany({room:_idroom})			
+					
+				const d_room = await Room.findByIdAndDelete(_idroom)
 
+					const result = await Theater.findById(_idtheater).populate({
+						path:'films',
+						model:'Film'
+					}).populate({
+						path:'rooms',
+						model:'Room'
+					})
+					res.send({theater: result})
 		} catch(error){
 			res.json({
 				err : error

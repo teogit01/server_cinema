@@ -8,6 +8,10 @@ router.get('/', controllers.index)
 
 //seat of room
 router.get('/room/:_idroom', controllers.seatOfRoom)
+
+// update seat add row, add column, update type
+router.post('/edit/room/:_idroom', controllers.updateSeatOfRoom)
+router.post('/edit', controllers.updateSeat)
 // add new role
 router.post('/', controllers.post)
 // detroy 

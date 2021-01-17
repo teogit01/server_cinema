@@ -6,13 +6,15 @@ var schema = new Schema({
 	code: String,
 	name: String,
 	runtime: Number,
+	price: Number,
 	director: String,
 	cast: String,
 	trailer: String,
 	poster: String,
 	openday:String,
-	status: Number,
+	status: Boolean, // 0_off, 1_actived
 	description: String,
+	type: Number, // 1_now, 2_soon, 3_special, -1_removed
 	
 	genres:[{
 		type:Schema.Types.ObjectId,
@@ -26,7 +28,7 @@ var schema = new Schema({
 
 	showtimes:[{
 		type:Schema.Types.ObjectId,
-		ref:"ShowTime"
+		ref:"Showtime"
 	}],
 
 	theaters:[{
@@ -34,12 +36,13 @@ var schema = new Schema({
 		ref:"Theater"
 	}],
 
+	rates:[{
+		type:Schema.Types.ObjectId,
+		ref:"Rate"
+	}],
+
 	id_banner: String,
 	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
 })
 
 var Film = mongoose.model('Film', schema)

@@ -7,18 +7,19 @@ var schema = new Schema({
 	code: String,
 	name: String,
 	row: String,
-	column: String,
+	column: Number,
 	status: Boolean,
+	type: String,
 
-	rooms:[{
+	room:{
 		type: Schema.Types.ObjectId,
 		ref: "Room"
-	}],
+	},
 	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
+	tickets:[{
+		type: Schema.Types.ObjectId,
+		ref: "Ticket"
+	}],
 })
 
 var Seat = mongoose.model('Seat', schema)

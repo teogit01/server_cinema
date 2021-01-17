@@ -4,8 +4,9 @@ var Schema = mongoose.Schema
 
 var schema = new Schema({
 	code: String,
-	image: String,
-	id_film: String
+	name: String,
+	banner: String,
+	status: Boolean
 })
 
 var Banner = mongoose.model('Banner', schema)

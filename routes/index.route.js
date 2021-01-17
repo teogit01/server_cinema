@@ -15,8 +15,11 @@ const showtime = require('./showtime.route')
 const theater = require('./theater.route')
 const ticket = require('./ticket.route')
 const user = require('./user.route')
+const note = require('./note.route')
+const discount = require('./discount.route')
 
 rootRouter.use('/api/role', role)
+rootRouter.use('/api/banner', banner)
 rootRouter.use('/api/branch', branch)
 rootRouter.use('/api/country', country)
 rootRouter.use('/api/rate', rate)
@@ -28,6 +31,8 @@ rootRouter.use('/api/showtime', showtime)
 rootRouter.use('/api/theater', theater)
 rootRouter.use('/api/ticket', ticket)
 rootRouter.use('/api/user', user)
+rootRouter.use('/api/note', note)
+rootRouter.use('/api/discount', discount)
 
 module.exports = rootRouter
 

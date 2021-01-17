@@ -3,18 +3,24 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
 var schema = new Schema({
-	code: String,
+	code: String,	
+	price: Number,
+	total:Number,
 	name: String,
-	Price: String,
-
-	id_user: String,
-	id_showtime: String,
-	id_seat: String,
+	status: Boolean,
 	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
+	user:{
+		type:Schema.Types.ObjectId,
+		ref:"User"
+	},
+	showtime:{
+		type:Schema.Types.ObjectId,
+		ref:"Showtime"
+	},	
+	discount:{
+		type:Schema.Types.ObjectId,
+		ref:"Discount"
+	},
 })
 
 var Ticket = mongoose.model('Ticket', schema)

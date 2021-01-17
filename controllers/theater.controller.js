@@ -1,6 +1,7 @@
 let Theater = require('../models/theater.model')
 let Branch = require('../models/branch.model')
 let Film = require('../models/film.model')
+let Room = require('../models/room.model')
 var shortid = require('shortid');
 
 const methods = {
@@ -9,15 +10,15 @@ const methods = {
 		res.send(theaters) 
 		//console.log(shortid.generate())
 	},	
-	detail : async (req,res)=>{
-		const _id = req.params.id
-		try{
-			//get room
-			const theater= await Theater.findById(_id).populate('rooms').populate('films')
-			const rooms = theater.rooms
-			const films = theater.films
-			//const films = await Theater.findById(_id).populate('films').select('films')
-			res.send({rooms, films}) 
+	index2: async (req, res)=>{
+		const theaters = await Theater.find()
+		res.send({theaters:theaters})
+	},
+	detailTheater : async (req,res)=>{		
+		try{						
+			const _idtheater = req.params._idtheater			
+			const theater = await Theater.findById(_idtheater)									
+			res.send(theater)
 		} catch(err){
 			res.send(err)
 		}		
@@ -34,72 +35,75 @@ const methods = {
 				res.send(theaters) 	
 			}				
 		}catch(err){
-			res.send('err',err)
+			res.send(err)
 		}
 		
 		//console.log(shortid.generate())
 	},	
 	// add film into theater
-	addFilm : async (req, res)=>{
-		const {_idtheater} = req.body
-		const {_films} = req.body
+	addFilm : async (req, res)=>{		
 		try{
-			const theater = await Theater.findById(_idtheater)
-			if(_films){
-				_films.forEach(async _idfilm=>{
-					theater.films.push(_idfilm)		
-					theater.save()
-
-					let film = await Film.findById(_idfilm)
-					film.theaters.push(_idtheater)
-					film.save()
-					//console.log(film)
-
-				})					
-			}			
-			
-			res.send(theater)
+			// films {label:'name', value:'_id'}
+			const {_idtheater, films} = req.body
+			const theater = await Theater.findById(_idtheater)				
+			const arr = []
+				if(films.length>0){					
+					films.forEach(async (film, idx)=>{
+						arr.push(film.value)
+						const p_film = await Film.findById(film.value)
+							p_film.theaters.push(_idtheater)
+							p_film.save()
+						if (idx === films.length-1){
+							theater.films = theater.films.concat(arr)
+							theater.save().then(async response=>{
+								const result = await Theater.findById(_idtheater).populate('films').populate('rooms')
+								res.send({theater:result})
+							})							
+						}						
+					})
+				}													
 		}catch(err){
 			res.send(err)
 		}	
 	},
-	post: async(req, res)=>{
+	// addRoom : async (req, res)=>{		
+	// 	try{
+	// 		const {_idtheater, name, capacity}= req.body
+	// 		//const theater = await Theater.findById(_idtheater)
+	// 		const room = new 
 
-		const { name, address, hotline, branch } = req.body		
-		const theater = await new Theater({
-			code: shortid.generate(),
-			name,
-			address,
-			hotline,
-			branch
-		})				
-		try{			
-			theater.save()
-				.then( async(respone)=>{
-					// push theater in branch
-					let branch_item = await Branch.findById(branch)
-					branch_item.theaters.push(respone._id)
-					branch_item.save()		
+															
+	// 	}catch(err){
+	// 		res.send(err)
+	// 	}	
+	// },
+	addNewTheater : async (req, res)=>{
+		try{
+			const { name, address, hotline, branch, email } = req.body		
+			const theater = await new Theater({
+				code: shortid.generate(),
+				name: name,
+				address: address,
+				hotline: hotline,
+				branch: branch,
+				status:true,
+			})	
 
-					res.json({
-						result : "success",
-						theatter: respone
+			theater.save().then(async response=>{
+				const p_branch = await Branch.findById(branch)
+					p_branch.theaters.unshift(response._id)
+					p_branch.save().then( async ()=>{
+						const result = await Branch.findById(branch).populate('theaters')
+						res.send({branch:result})
 					})	
 			})
-			.catch(()=>{
-				res.json({
-					result: "fail"
-				})
-			})
-		}
-		catch(error){
-			res.json({
-				err : error
-			})
-		}
+
+		} catch(err){
+			res.send(err)
+		}				
 	},
 	// delete theater
-	destroy: async(req, res)=>{				
+	destroy: async (req, res)=>{				
 		let id = req.params.id	// _id theater
 
 		let theater = await Theater.findById(id)		
@@ -117,24 +121,98 @@ const methods = {
 			}						 	
 
 			theater.deleteOne({_id: id})
-			.then(()=>{
-				res.json({
-					result : "Delete Successfully",
-					_id: id
-				})
-			})
-			.catch(()=>{
-				res.json({
-					result : "fail"				
-				})
-			})
+			res.send('ok')
+			// .then(()=>{
+			// 	res.json({
+			// 		result : "Delete Successfully",
+			// 		_id: id
+			// 	})
+			// })
+			// .catch(()=>{
+			// 	res.json({
+			// 		result : "fail"				
+			// 	})
+			// })
 
-		} catch(error){
-			res.json({
-				err : error
-			})
+		} catch(err){
+			res.send(err)
 		}			
+	},
+	//client ////////////---------------////////////---------------////////////---------------////////////---------------
+	getTheater : async (req, res) => {			
+		try{
+			const {_idbranch, _idfilm} = req.query
+			if (_idbranch && _idfilm){				
+				let result = []
+				const theaters = await Theater.find({branch:_idbranch})
+				if(theaters.length > 0){
+					theaters.forEach( (theater, idx)=>{
+						theater.films.forEach( film =>{
+							if (`${film}` === _idfilm){
+								result.push(theater)
+							}
+						})
+
+						if(idx === theaters.length -1){
+							res.send(result)
+						}
+					})						
+				}					
+			}						
+			res.send([])
+		} catch(err){
+			res.send(err)
+		}		
+	},
+	theaterRoom : async (req, res)=>{
+		try{
+			const {_idroom} = req.params			
+			const room = await Room.findById(_idroom)
+			const theater = await Theater.findById(room.theater)
+			res.send(theater)
+		} catch(err){
+			res.send(err)
+		}
+	},
+	removeTheater : async (req, res)=>{
+		try{
+			const {_idtheater, _idbranch} = req.body						
+			const theater = await Theater.findByIdAndDelete(_idtheater)
+			const branch = await Branch.findById(_idbranch)	
+				const newTheaters = branch.theaters.filter(x=> `${x}` !== _idtheater)
+				branch.theaters = newTheaters					
+				branch.save().then(async ()=>{
+					const result = await Branch.findById(_idbranch).populate('theaters')					
+					res.send({branch:result})
+				})			
+		} catch(err){
+			res.send(err)
+		}
+	},
+	removeFilm : async (req, res)=>{
+		try{
+			const {_idtheater, _idfilm} = req.body
+			const film = await Film.findById(_idfilm)
+				const newTheaters = film.theaters.filter(x=>`${x}` !== `${_idtheater}`)
+				film.theaters = newTheaters
+				film.save()
+			const theater = await Theater.findById(_idtheater)
+				const newFilms = theater.films.filter(x=> `${x}` !== `${_idfilm}`)
+				theater.films = newFilms
+				theater.save().then(async ()=>{
+					const result = await Theater.findById(_idtheater).populate({
+						path:'films',
+						model:'Film'
+					}).populate({
+						path:'rooms',
+						model:'Room'
+					})
+					res.send({theater: result})
+				})
+		} catch(err){
+			res.send(err)
+		}
 	}
-}
+}	
 
 module.exports = methods

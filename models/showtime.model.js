@@ -7,6 +7,7 @@ var schema = new Schema({
 	date: String,
 	start: String,
 	end: String,
+	price: Number,
 
 	film:{
 		type: Schema.Types.ObjectId,
@@ -16,13 +17,13 @@ var schema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: "Room"
 	},
-	
-	create_at: {
-		type: Date,
-		default: Date.now
-	}
+	tickets:[{
+		type: Schema.Types.ObjectId,
+		ref: "Ticket"
+	}],
+
 })
 
-var ShowTime = mongoose.model('ShowTime', schema)
+var Showtime = mongoose.model('Showtime', schema)
 
-module.exports = ShowTime
+module.exports = Showtime
